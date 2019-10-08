@@ -1,0 +1,785 @@
+#final project
+
+charity <- read.csv(file.choose())
+#need to import the csv this way to get in correct format
+
+charity.t <- charity
+
+#Using original charity data for EDA
+
+sapply(charity, function(x) sum(is.na(x)))
+
+#missing 2007 record for donr and damt which are just test sets
+
+names(charity)
+
+dim(charity)
+
+str(charity)
+
+summary(charity)
+
+attach(charity)
+
+#part is the split with validate, test and train. Recommend looking at this from a few perspectives
+
+head(charity)
+
+# note - don't transform DONR or AMT
+
+#correlation matrix
+install.packages("corrplot")
+library(corrplot)
+
+cMatrix <-cor(charity[1:23], use="complete.obs", method="pearson")
+round(cMatrix, 2)
+
+corrplot(cMatrix, method="square")
+
+#histograms of continuous variables. Chose 10 to get a nice cross section
+
+hist(avhv, breaks=10, col="blue")
+hist(incm, breaks=10, col="darkblue")
+hist(inca, breaks=10, col="green")
+hist(plow, breaks=10, col="darkgreen")
+hist(npro, breaks=10, col="yellow")
+hist(tgif, breaks=10, col="purple")
+hist(lgif, breaks=10, col="red")
+hist(rgif, breaks=10, col="darkred")
+hist(tdon, breaks=10, col="orange")
+hist(tlag, breaks=10, col="darkorange")
+hist(agif, breaks=10, col="grey")
+
+#want to know what the revenue was on the previous campaign. Create later?
+
+#charity$cost <- -2
+#charity$netprofit <- charity$damt+charity$cost
+
+#Hoigh rsquare scatterplot
+
+install.packages("ggplot2")
+library(ggplot2)
+
+Scatter1 <-ggplot(charity, aes(x=damt, y=chld))
+Scatter1 + geom_point()
+
+Scatter2 <-ggplot(charity, aes(x=damt, y=reg2))
+Scatter2 + geom_point()
+
+Scatter3 <-ggplot(charity, aes(x=damt, y=wrat))
+Scatter3 + geom_point()
+
+Scatter4 <-ggplot(charity, aes(x=damt, y=home))
+Scatter4 + geom_point()
+
+Scatter5 <-ggplot(charity, aes(x=damt, y=tlag))
+Scatter5 + geom_point()
+
+Scatter6 <-ggplot(charity, aes(x=damt, y=tdon))
+Scatter6 + geom_point()
+
+install.packages("gridExtra")
+library(gridExtra)
+library(grid)
+library(lattice)
+bp1 <- ggplot(data=charity, aes(x=damt, y=chld))+geom_boxplot(size=1)
+bp2 <- ggplot(data=charity, aes(x=damt, y=wrat))+geom_boxplot(size=1)
+grid.arrange(bp1, bp2, ncol = 2)
+
+par(mfrow = c(1,3))
+hist1 <- hist(chld,col= "Grey")
+boxplot1 <- boxplot(chld,col= "Grey")
+qqnorm1 <- qqnorm(chld,col= "Grey")
+
+par(mfrow = c(1,3))
+hist2 <- hist(reg2,col= "red")
+boxplot2 <- boxplot(reg2,col= "red")
+qqnorm2 <- qqnorm(reg2,col= "red")
+
+par(mfrow = c(1,3))
+hist2 <- hist(wrat,col= "blue")
+boxplot2 <- boxplot(wrat,col= "blue")
+qqnorm2 <- qqnorm(wrat,col= "blue")
+
+par(mfrow = c(1,3))
+hist2 <- hist(home,col= "blue")
+boxplot2 <- boxplot(home,col= "blue")
+qqnorm2 <- qqnorm(home,col= "blue")
+
+par(mfrow = c(1,3))
+hist2 <- hist(avhv,col= "blue")
+boxplot2 <- boxplot(avhv,col= "blue")
+qqnorm2 <- qqnorm(avhv,col= "blue")
+
+par(mfrow = c(1,3))
+hist2 <- hist(incm,col= "blue")
+boxplot2 <- boxplot(incm,col= "blue")
+qqnorm2 <- qqnorm(incm,col= "blue")
+
+par(mfrow = c(1,3))
+hist2 <- hist(inca,col= "blue")
+boxplot2 <- boxplot(inca,col= "blue")
+qqnorm2 <- qqnorm(inca,col= "blue")
+
+par(mfrow = c(1,3))
+hist2 <- hist(plow,col= "blue")
+boxplot2 <- boxplot(plow,col= "blue")
+qqnorm2 <- qqnorm(plow,col= "blue")
+
+par(mfrow = c(1,3))
+hist2 <- hist(npro,col= "blue")
+boxplot2 <- boxplot(npro,col= "blue")
+qqnorm2 <- qqnorm(npro,col= "blue")
+
+par(mfrow = c(1,3))
+hist2 <- hist(tgif,col= "blue")
+boxplot2 <- boxplot(tgif,col= "blue")
+qqnorm2 <- qqnorm(tgif,col= "blue")
+
+par(mfrow = c(1,3))
+hist2 <- hist(tdon,col= "blue")
+boxplot2 <- boxplot(tdon,col= "blue")
+qqnorm2 <- qqnorm(tdon,col= "blue")
+
+par(mfrow = c(1,3))
+hist2 <- hist(tlag,col= "blue")
+boxplot2 <- boxplot(tlag,col= "blue")
+qqnorm2 <- qqnorm(tlag,col= "blue")
+
+#the variables with the most potential for transformation appear to be
+#inca,plow and tgif because of the lack of normaility in the QQ plots
+#and the histogram distributions
+
+
+#Attempt to transform data
+
+
+charity$tgifLog <- log(charity$tgif)
+
+charity$tgifSQRT <- sqrt(charity$tgif)
+
+#log appears to have some sucess at trasforming data.
+#Will apply transformations in the models as recommended in the code
+
+par(mfrow = c(1,3))
+hist2 <- hist(charity$tgifLog,col= "blue")
+boxplot2 <- boxplot(charity$tgifLog,col= "blue")
+qqnorm2 <- qqnorm(charity$tgifLog,col= "blue")
+
+#much better normality above
+
+par(mfrow = c(1,3))
+hist2 <- hist(charity$tgifSQRT ,col= "blue")
+boxplot2 <- boxplot(charity$tgifSQRT ,col= "blue")
+qqnorm2 <- qqnorm(charity$tgifSQRT ,col= "blue")
+
+#sqrt is less effective
+
+
+#code provided to assignment
+
+data.train <- charity.t[charity$part=="train",]
+x.train <- data.train[,2:21]
+c.train <- data.train[,22] # donr
+n.train.c <- length(c.train) # 3984
+y.train <- data.train[c.train==1,23] # damt for observations with donr=1
+n.train.y <- length(y.train) # 1995
+
+data.valid <- charity.t[charity$part=="valid",]
+x.valid <- data.valid[,2:21]
+c.valid <- data.valid[,22] # donr
+n.valid.c <- length(c.valid) # 2018
+y.valid <- data.valid[c.valid==1,23] # damt for observations with donr=1
+n.valid.y <- length(y.valid) # 999
+
+data.test <- charity.t[charity$part=="test",]
+n.test <- dim(data.test)[1] # 2007
+x.test <- data.test[,2:21]
+
+x.train.mean <- apply(x.train, 2, mean)
+x.train.sd <- apply(x.train, 2, sd)
+x.train.std <- t((t(x.train)-x.train.mean)/x.train.sd) # standardize to have zero mean and unit sd
+apply(x.train.std, 2, mean) # check zero mean
+apply(x.train.std, 2, sd) # check unit sd
+data.train.std.c <- data.frame(x.train.std, donr=c.train) # to classify donr
+data.train.std.y <- data.frame(x.train.std[c.train==1,], damt=y.train) # to predict damt when donr=1
+
+x.valid.std <- t((t(x.valid)-x.train.mean)/x.train.sd) # standardize using training mean and sd
+data.valid.std.c <- data.frame(x.valid.std, donr=c.valid) # to classify donr
+data.valid.std.y <- data.frame(x.valid.std[c.valid==1,], damt=y.valid) # to predict damt when donr=1
+
+x.test.std <- t((t(x.test)-x.train.mean)/x.train.sd) # standardize using training mean and sd
+data.test.std <- data.frame(x.test.std)
+
+# linear discriminant analysis
+
+library(MASS)
+
+
+model.lda1 <- lda(donr ~ reg1 + reg2 + reg3 + reg4 + home + chld + I(chld^-2) + I(hinc^-2) + hinc + I(hinc^2) + genf + wrat + I(wrat^2) +
+                    + avhv + incm  + inca + plow + npro + I(npro^2) + tgif + lgif + rgif + I(rgif^2) + tdon + I(tdon^2) + tlag + I(tlag^2)  + agif, 
+                  + data.train.std.c) # include additional terms on the fly using I()
+
+# Note: strictly speaking, LDA should not be used with qualitative predictors,
+# but in practice it often is if the goal is simply to find a good predictive model
+
+post.valid.lda1 <- predict(model.lda1, data.valid.std.c)$posterior[,2] # n.valid.c post probs
+
+# calculate ordered profit function using average donation = $14.50 and mailing cost = $2
+
+profit.lda1 <- cumsum(14.5*c.valid[order(post.valid.lda1, decreasing=T)]-2)
+plot(profit.lda1) # see how profits change as more mailings are made
+n.mail.valid <- which.max(profit.lda1) # number of mailings that maximizes profits
+c(n.mail.valid, max(profit.lda1)) # report number of mailings and maximum profit
+# Code provided with assignment = 1329.0 11624.5
+
+#Without any transformtation
+#1472 11367.5
+
+#our transformations
+
+#1250 11782.50
+
+#transformed - hinc^-2 hinc and hinc^2, i just wanted to see how the -2 would interact. 
+#ALso applied to a series of other functions and if they didn't contribute to the model
+#I added a negative polynomial
+
+cutoff.lda1 <- sort(post.valid.lda1, decreasing=T)[n.mail.valid+1] # set cutoff based on n.mail.valid
+chat.valid.lda1 <- ifelse(post.valid.lda1>cutoff.lda1, 1, 0) # mail to everyone above the cutoff
+table(chat.valid.lda1, c.valid) # classification table
+#               c.valid
+#chat.valid.lda1   0   1
+#              0 675  14
+#              1 344 985
+# check n.mail.valid = 344+985 = 1329
+# check profit = 14.5*985-2*1329 = 11624.5
+
+#updated
+
+#c.valid
+#chat.valid.lda1   0   1
+#               0 754  14
+#               1 265 985
+# check n.mail.valid = 265+985 = 1250
+# check profit = 14.5*985-2*1250= 11782.5
+
+
+
+
+# logistic regression
+
+model.log1 <- glm(donr ~ reg1 + reg2 + reg3 + reg4 + home + chld + I(chld^-2) + I(hinc^-2) + hinc + I(hinc^2) + genf + wrat + I(wrat^2) +
+                    + avhv + incm  + inca + plow + npro + I(npro^2) + tgif + lgif + rgif + I(rgif^2) + tdon + I(tdon^2) + tlag + I(tlag^2)  + agif, 
+                  + data.train.std.c, family=binomial("logit"))
+
+post.valid.log1 <- predict(model.log1, data.valid.std.c, type="response") # n.valid post probs
+
+# calculate ordered profit function using average donation = $14.50 and mailing cost = $2
+
+profit.log1 <- cumsum(14.5*c.valid[order(post.valid.log1, decreasing=T)]-2)
+plot(profit.log1) # see how profits change as more mailings are made
+n.mail.valid <- which.max(profit.log1) # number of mailings that maximizes profits
+c(n.mail.valid, max(profit.log1)) # report number of mailings and maximum profit
+
+# Original regression 1291.0 11642.5
+
+#Regression with no I variables
+
+#our model 1276 11817.5
+
+
+cutoff.log1 <- sort(post.valid.log1, decreasing=T)[n.mail.valid+1] # set cutoff based on n.mail.valid
+chat.valid.log1 <- ifelse(post.valid.log1>cutoff.log1, 1, 0) # mail to everyone above the cutoff
+table(chat.valid.log1, c.valid) # classification table
+
+#               c.valid
+#chat.valid.log1   0   1
+#              0 709  18
+#              1 310 981
+# check n.mail.valid = 310+981 = 1291
+# check profit = 14.5*981-2*1291 = 11642.5
+
+#updated to our model
+#               c.valid
+#chat.valid.log1   0   1
+#              0 734  8
+#              1 285 991
+# check n.mail.valid = 285+991=1276
+# check profit = 14.5*991-2*1276 = 11817.50
+
+
+# Results
+
+# n.mail Profit  Model
+# 1329   11624.5 LDA1
+# 1291   11642.5 Log1
+
+########Our models ###########
+# 1250   11782.50 LDA1
+# 1276   11817.50 Log1
+
+
+
+
+##############  QDA model #####################
+
+qda.fit <- qda(donr ~  reg1 + reg2 + reg3 + reg4 + home + chld + I(chld^-2) + I(hinc^-2) + hinc + I(hinc^2) + genf + wrat + I(wrat^2) +
+                 + avhv + incm  + inca + plow + npro + I(npro^2) + tgif + lgif + rgif + I(rgif^2) + tdon + I(tdon^2) + tlag + I(tlag^2)  + agif, 
+               data.train.std.c)
+qda.fit
+
+post.valid.qda11 <- predict(qda.fit, data.valid.std.c)$posterior[,2]
+
+rofit.qda1 <- cumsum(14.5*c.valid[order(post.valid.qda11, decreasing=T)]-2)
+plot(rofit.qda1) # see how profits change as more mailings are made
+n.mail.valid <- which.max(rofit.qda1) # number of mailings that maximizes profits
+c(n.mail.valid, max(rofit.qda1)) # report number of mailings and maximum profit
+
+#with no additional terms
+# 1399 11238
+
+#with additional terms above
+#1260 11066.50 
+
+#Model is better without the additional terms.
+
+#QDA doesn't seem to compete with regression in first section'
+
+#############  K-Nearest Neighbors ##################
+
+
+library(class)
+
+knn.pred1 <- knn(data.train.std.c, data.valid.std.c, c.train, k = 1)
+
+mean(c.valid != knn.pred1)
+mean(c.valid != "0")
+
+table(knn.pred1, c.valid)
+
+932/(932+168)
+
+knn.pred2 <- knn(data.train.std.c, data.valid.std.c, c.train, k = 3)
+
+mean(c.valid != knn.pred2)
+mean(c.valid != "0")
+
+table(knn.pred2, c.valid)
+
+956/(956+157)
+
+knn.pred3 <- knn(data.train.std.c, data.valid.std.c, c.train, k = 5)
+
+mean(c.valid != knn.pred3)
+
+table(knn.pred3, c.valid)
+
+964/(964+169)
+
+
+#Knn at 3 is optimal
+#c.valid
+#knn.pred3   0   1
+#0 850  35
+#1 169 964
+
+
+# check n.mail.valid = 169+964 = 1133
+# check profit = 14.5*964-2*1133 = 11712
+14.5*964-2*1133
+
+#Pretty good model. Almost competes with regression
+
+#libGCV automates knots which is pretty nice.
+
+library(splines)
+library(gam)
+library(akima)
+
+# k = -1 automates process 
+
+Gam1 <- gam(donr ~ reg1 + reg2 + reg3 + reg4 + home + chld + I(chld^-2) + I(hinc^-2) + hinc + I(hinc^2) + genf + wrat + I(wrat^2) +
+              + avhv + incm  + inca + plow + npro + I(npro^2) + tgif + lgif + rgif + I(rgif^2) + s(tdon) + s(I(tdon^2)) + s(tlag) + s(I(tlag^2))+ agif, data = data.train.std.c)
+
+plot.gam(Gam1, se = TRUE, col = "red")
+coef(Gam1)
+
+post.valid.gam1 <- predict(Gam1, data.valid.std.c, type="response") # n.valid post probs
+
+rofit.gam1 <- cumsum(14.5*c.valid[order(post.valid.gam1, decreasing=T)]-2)
+plot(rofit.gam1) # see how profits change as more mailings are made
+n.mail.valid <- which.max(rofit.gam1) # number of mailings that maximizes profits
+c(n.mail.valid, max(rofit.gam1)) # report number of mailings and maximum profit
+
+
+#GAM is the best model yet. 
+#1224 11,849
+
+# select model.gam1 since it has maximum profit in the validation sample
+
+post.test <- predict(Gam1, data.test.std, type="response") # post probs for test data
+
+# Oversampling adjustment for calculating number of mailings for test set
+
+n.mail.valid <- which.max(rofit.gam1)
+tr.rate <- .1 # typical response rate is .1
+vr.rate <- .5 # whereas validation response rate is .5
+adj.test.1 <- (n.mail.valid/n.valid.c)/(vr.rate/tr.rate) # adjustment for mail yes
+adj.test.0 <- ((n.valid.c-n.mail.valid)/n.valid.c)/((1-vr.rate)/(1-tr.rate)) # adjustment for mail no
+adj.test <- adj.test.1/(adj.test.1+adj.test.0) # scale into a proportion
+n.mail.test <- round(n.test*adj.test, 0) # calculate number of mailings for test set
+
+cutoff.test <- sort(post.test, decreasing=T)[n.mail.test+1] # set cutoff based on n.mail.test
+chat.test <- ifelse(post.test>cutoff.test, 1, 0) # mail to everyone above the cutoff
+table(chat.test)
+#    0    1 
+# 1676  331
+
+
+# See below for saving chat.test into a file for submission
+
+
+#our version
+# 0    1 
+# 1714  293 
+
+
+##### PREDICTION MODELING ##################
+
+# Least squares regression
+
+model.ls1 <- lm(damt ~ reg1 + reg2 + reg3 + reg4 + home + chld + hinc + genf + wrat + 
+                  avhv + incm + inca + plow + npro + tgif + lgif + rgif + tdon + tlag + agif, 
+                data.train.std.y)
+
+pred.valid.ls1 <- predict(model.ls1, newdata = data.valid.std.y) # validation predictions
+mean((y.valid - pred.valid.ls1)^2) # mean prediction error
+# 1.867523
+
+
+sd((y.valid - pred.valid.ls1)^2)/sqrt(n.valid.y) # std error
+# 0.1696615
+
+
+
+# Updated the model found above
+model.ls2 <- lm(damt ~ reg1 + reg2 + reg3 + reg4 + home + chld + I(chld^-2) + I(hinc^-2) + hinc + I(hinc^2) + genf + wrat + I(wrat^2) +
+                  + avhv + incm  + inca + plow + npro + I(npro^2) + tgif + lgif + rgif + I(rgif^2) + s(tdon) + I(tdon^2) + s(tlag) + I(tlag^2)+ agif, 
+                data.train.std.y)
+
+pred.valid.ls2 <- predict(model.ls2, newdata = data.valid.std.y) # validation predictions
+mean((y.valid - pred.valid.ls2)^2) # mean prediction error
+# 1.618868
+sd((y.valid - pred.valid.ls2)^2)/sqrt(n.valid.y) # std error
+# 0.1530507
+# Results
+
+# MPE  Model
+# 1.867523 LS1
+# 1.618868 LS2
+
+# select model.ls2 since it has minimum mean prediction error in the validation sample
+
+#yhat.test <- predict(model.ls2, newdata = data.test.std) # test predictions
+
+############best subset############
+
+#my analysis for DAMT
+
+library(leaps)
+regfit.full <- regsubsets(damt ~ ., data = data.train.std.y)
+summary(regfit.full)
+
+regfit.full <- regsubsets(damt ~ ., data = data.train.std.y, nvmax=22)
+summary(regfit.full)
+
+par(mfrow = c(1, 2))
+plot(regfit.full, scale = "bic", main = "Predictor Variables vs. BIC")
+reg.summary <- summary(regfit.full)
+reg.summary$bic
+
+plot(reg.summary$bic, xlab = "Number of Predictors", ylab = "BIC", type = "l",main = "Best Subset Selection Using BIC")
+which.min(reg.summary$bic)
+points(10, reg.summary$bic[10], col = "brown", cex = 2, pch = 20)
+coef(regfit.full, 10)
+
+# Predict "function" for regsubsets()
+predict.regsubsets <- function(object, newdata, id,...){
+  form <- as.formula(object$call[[2]])
+  mat <- model.matrix(form, newdata)
+  coefi <- coef(object, id = id)
+  xvars <- names(coefi)
+  mat[, xvars]%*%coefi
+  
+}
+
+mean((y.valid- predict(regfit.full, data.valid.std.y, id = 10))^2) # Mean Predictor Error = 1.857947
+sd((y.valid - predict(regfit.full, data.valid.std.y, id = 10))^2)/sqrt(n.test) # Standard Error = .1194824
+
+regfit.full1 <- regsubsets(damt ~ ., data = data.train.std.y, nvmax=10)
+summary(regfit.full1)
+
+lm.bic <- lm(damt ~ reg3 + reg4 + home + chld + hinc + incm + plow + npro + rgif + agif, data = data.train.std.y)
+summary(lm.bic) # Summary of the linear regression model
+coef(lm.bic) # Extract the estimated regression model coefficients
+confint(lm.bic) # Obtain a 95% CI for the coefficient estimates
+par(mfrow = c(2, 2)); plot(lm.bic) # Plot the model diagnostics
+vif(lm.bic); # Check for collinearity (all VIF <= 10)
+predict(lm.bic, data.valid.std.y) # Predict the responses for the TEST data set
+predict(lm.bic, data.valid.std.y , interval = "prediction") # Prediction Interval of Predicted Responses
+predict(lm.bic, data.valid.std.y , interval = "confidence") # Confidence Interval of Predicted Responses
+mean((y.valid - predict(lm.bic, data.valid.std.y ))^2) # Mean Predictor Error = 1.857947
+sd((y.valid - predict(lm.bic, data.valid.std.y ))^2)/sqrt(n.test) # Standard Error = .1194824
+
+
+################# Best subset 10 fold ####################
+
+
+## Part 3: Apply Best Subset Selection using 10-fold Cross-Validation to select the number
+# of predictors and then fit the least squares regression model using the "best" subset.
+k <- 10
+set.seed(1000)
+folds <- sample(1:k, nrow(data.train.std.y), replace = TRUE)
+cv.errors <- matrix(NA, k, 15, dimnames = list(NULL, paste(1:15)))
+# Let's write our own predict method
+predict.regsubsets <- function(object, newdata, id,...){
+  form <- as.formula(object$call[[2]])
+  mat <- model.matrix(form, newdata)
+  coefi <- coef(object, id = id)
+  6
+  xvars <- names(coefi)
+  mat[, xvars]%*%coefi
+}
+for (j in 1:k) {
+  best.fit <- regsubsets(damt ~ ., data = data.train.std.y[folds != j, ], nvmax = 22)
+  for (i in 1:15) {
+    pred <- predict(best.fit, data.train.std.y[folds == j, ], id = i)
+    cv.errors[j, i] = mean((data.train.std.y$damt[folds == j] - pred)^2)
+  }
+}
+# This gives us a 10x10 matrix, of which the (i, j)th element corresponds
+# to the test MSE for the ith cross-validation fold for the best j-variable model
+cv.errors
+mean.cv.errors <- apply(cv.errors, 2, mean)
+mean.cv.errors
+which.min(mean.cv.errors)
+mean.cv.errors[10]
+
+par(mfrow = c(1,2))
+plot(mean.cv.errors, type = "b", xlab = "Number of Predictors", ylab = "Mean CV Errors", main = "Best Subset Selection (10-fold CV)")
+points(10, mean.cv.errors[10], col = "blue", cex = 2, pch = 20)
+rmse.cv = sqrt(apply(cv.errors, 2, mean))
+rmse.cv[10]
+plot(rmse.cv, pch = 19, type = "b", xlab = "Number of Predictors", ylab = "RMSE CV", main = "Best Subset Selection (10-fold CV)")
+points(10, rmse.cv[10], col = "blue", cex = 2, pch = 20)
+# The cross-validation selects a 10-variable model, so we perform best subset
+# selection on the training data set to get the best 10-variable model
+reg.best <- regsubsets(damt ~ ., data = data.train.std.y, nvmax = 10)
+coef(reg.best, 10)
+mean((data.valid.std.y$damt - predict(reg.best, data.valid.std.y, id = 10))^2) # Mean Predictor Error = 1.857947
+sd((data.valid.std.y$damt - predict(reg.best, data.valid.std.y, id = 10))^2)/sqrt(n.valid.y) # Standard Error = 0.1693
+lm.cv.best <- lm(damt ~ reg3+reg4+home+chld+hinc+incm+plow+npro+rgif+agif, data = data.valid.std.y)
+summary(lm.cv.best) # Summary of the linear regression model
+coef(lm.cv.best) # Extract the estimated regression model coefficients
+confint(lm.cv.best) # Obtain a 95% CI for the coefficient estimates
+par(mfrow = c(2, 2)); plot(lm.cv.best) # Plot the model diagnostics
+vif(lm.cv.best) # Check for collinearity (all VIF <= 10)
+predict(lm.cv.best, data.train.std.y) # Predict the responses for the TEST data
+predict(lm.cv.best, data.train.std.y, interval = "prediction") # PI of Predicted Responses
+predict(lm.cv.best, data.train.std.y, interval = "confidence") # CI of Predicted Responses
+mean((data.valid.std.y$damt - predict(lm.cv.best, data.valid.std.y))^2) # Mean Predictor Error = 1.8127
+sd((data.valid.std.y$damt - predict(lm.cv.best, data.valid.std.y))^2)/sqrt(n.test) # Standard Error = .01190
+
+
+
+##################### Ridge ############################
+
+## Question 4: Ridge regression model using 10-fold cross-validation to select that largest
+# value of lambda s.t. the CV error is within 1 s.e. of the minimum
+
+#need matrix
+
+library(glmnet)
+
+#need model matrix to run ridge & lasso
+
+x <- model.matrix(damt ~ reg1 + reg2 + reg3 + reg4 + home + chld + I(chld^-2) + I(hinc^-2) + hinc + I(hinc^2) + genf + wrat + I(wrat^2) +
+                    + avhv + incm  + inca + plow + npro + I(npro^2) + tgif + lgif + rgif + I(rgif^2) + s(tdon) + I(tdon^2) + s(tlag) + I(tlag^2)+ agif, 
+                  data.train.std.y)[,-1] # define predictor matrix
+
+y <- data.train.std.y$damt
+
+#validation
+
+x1 <- model.matrix(damt ~ reg1 + reg2 + reg3 + reg4 + home + chld + I(chld^-2) + I(hinc^-2) + hinc + I(hinc^2) + genf + wrat + I(wrat^2) +
+                     + avhv + incm  + inca + plow + npro + I(npro^2) + tgif + lgif + rgif + I(rgif^2) + s(tdon) + I(tdon^2) + s(tlag) + I(tlag^2)+ agif, 
+                  data.valid.std.y)[,-1] # define predictor matrix
+
+y1 <- data.valid.std.y$damt
+
+
+par(mfrow = c(1,2))
+grid <- 10^seq(10, -2, length = 100)
+ridge.mod <- glmnet(x,  y, alpha = 0, lambda = grid, thresh = 1e-12)
+plot(ridge.mod, xvar = "lambda", label = TRUE)
+
+
+cv.out <- cv.glmnet(x, y, alpha = 0)
+plot(cv.out)
+bestlam <- cv.out$lambda.min
+bestlam # Lambda = 0.5385762 (leads to smallest CV error)
+log(bestlam)
+ridge.mod <- glmnet(x, y, alpha = 0, lambda = bestlam)
+ridge.pred <- predict(ridge.mod, s = bestlam, newx = x1)
+mean((ridge.pred - y1)^2) # Mean Prediction Error = 1.871675
+sd((ridge.pred - y1)^2)/sqrt(n.valid.c) # Standard Error = .120297
+largelam <- cv.out$lambda.1se
+largelam # Lambda = .5910867 (largest lambda w/in 1 SE)
+ridge.mod <- glmnet(x, y, alpha = 0, lambda = largelam)
+ridge.pred <- predict(ridge.mod, s = largelam, newx = x1)
+mean((ridge.pred - y1)^2) # Mean Prediction Error = 1.96442
+sd((ridge.pred - y1)^2)/sqrt(n.test) # Standard Error = 0.125314
+# Here are the estimated coefficients
+predict(ridge.mod, type = "coefficients", s = largelam)[1:21,]
+
+# running the ridge mod with a baseline lm matrix results in 
+# 1.994 0.126507
+
+#Updated matrix produces value of 
+#1.795708 0.1193136
+
+
+################## Lasso ################################
+
+#Lasso model using 10-fold cross-validation to select that largest
+# value of lambda s.t. the CV error is within 1 s.e. of the minimum
+par(mfrow = c(1,2))
+grid <- 10^seq(10, -2, length = 100)
+lasso.mod <- glmnet(x, y, alpha = 1, lambda = grid, thresh = 1e-12)
+plot(lasso.mod, xvar = "lambda", label = TRUE)
+
+cv.out <- cv.glmnet(x, y, alpha = 1)
+plot(cv.out)
+bestlam1 <- cv.out$lambda.min
+bestlam1 # Lambda = 0.01683436(leads to smallest CV error)
+log(bestlam1) #-4.084333
+lasso.mod <- glmnet(x, y, alpha = 1, lambda = bestlam1)
+lasso.pred <- predict(lasso.mod, s = bestlam1, newx = x1)
+mean((lasso.pred - y1)^2) # Mean Prediction Error = 1.637555
+sd((lasso.pred - y1)^2)/sqrt(n.valid.c) # Standard Error = 0.1088809
+largelam1 <- cv.out$lambda.1se
+largelam1 # Lambda = 0.07458668(largest lambda w/in 1 SE)
+lasso.mod <- glmnet(x, y, alpha = 1, lambda = largelam1)
+lasso.pred <- predict(lasso.mod, s = largelam1, newx = x1)
+mean((lasso.pred - y1)^2) # Mean Prediction Error = 1.809427
+sd((lasso.pred - y1)^2)/sqrt(n.valid.c) # Standard Error = 0.1148682
+# Here are the estimated coefficients
+lasso.coef <- predict(lasso.mod, type = "coefficients", s = largelam1)[1:21,]
+lasso.coef[lasso.coef != 0]
+
+#14 VARIABLES WITH LASSO
+
+#(Intercept)         reg2         reg3         reg4         home         chld 
+#14.420665283 -0.036367721  0.296432996  0.601995130  0.142792965 -0.573137892 
+#hinc    I(hinc^2)         genf         wrat    I(wrat^2)         incm 
+#0.439618616 -0.010879096 -0.008169958 -0.100526752 -0.227336166  0.178801780 
+#plow         npro         tgif 
+#0.095833879  0.074108567  0.063756924 
+
+
+#################### PCR & partial least squares##############
+
+
+library(pls)
+pcr.fit <- pcr(damt ~ reg1 + reg2 + reg3 + reg4 + home + chld + I(chld^-2) + I(hinc^-2) + hinc + I(hinc^2) + genf + wrat + I(wrat^2) +
+                 + avhv + incm  + inca + plow + npro + I(npro^2) + tgif + lgif + rgif + I(rgif^2) + s(tdon) + I(tdon^2) + s(tlag) + I(tlag^2)+ agif, 
+               data = data.train.std.y, scale = TRUE, validation = "CV")
+summary(pcr.fit)
+
+validationplot(pcr.fit, val.type = "MSEP")
+
+# We find the lowest CV error when M = 25 component are used. Now compute the test MSE.
+pcr.pred <- predict(pcr.fit, x1, ncomp = 25)
+mean((pcr.pred - y1)^2)
+# 1.8667
+#new version
+#1.6851
+
+sd((pcr.pred - y1)^2)/ sqrt(length(y1)) 
+# 0.1695524
+#new version
+#0.1562277
+
+
+pls.fit <- plsr(damt ~ reg1 + reg2 + reg3 + reg4 + home + chld + I(chld^-2) + I(hinc^-2) + hinc + I(hinc^2) + genf + wrat + I(wrat^2) +
+                  + avhv + incm  + inca + plow + npro + I(npro^2) + tgif + lgif + rgif + I(rgif^2) + s(tdon) + s(I(tdon^2)) + s(tlag) + s(I(tlag^2))+ agif, 
+                data = data.train.std.y, scale = T, validation = "CV")
+summary(pls.fit)
+validationplot(pls.fit, val.type = "MSEP")
+
+# The lowest CV error occurs when M = 6 PLS directions based on the plot
+# We now evaluate the test set MSE
+pls.pred <- predict(pls.fit, x1, ncomp = 6)
+mean((pls.pred - y1)^2) 
+sd((pls.pred - y1)^2)/ sqrt(length(y1)) 
+# 1.866103
+
+#New version
+#1.615749
+
+
+yhat.test <- predict(pls.fit , newdata = data.test.std) # test predictions
+
+# FINAL RESULTS
+
+# Save final results for both classification and regression
+
+length(chat.test) # check length = 2007
+length(yhat.test) # check length = 2007
+chat.test[1:10] # check this consists of 0s and 1s
+yhat.test[1:10] # check this consists of plausible predictions of damt
+
+ip <- data.frame(chat=chat.test, yhat=yhat.test) # data frame with two variables: chat and yhat
+getwd()
+write.csv(ip, file="finalv2.csv", row.names=FALSE) # use your initials for the file name
+
+# submit the csv file in Canvas for evaluation based on actual test donr and damt values
+
+# warning, check the values for reasonability
+
+
+
+
+
+
+
+#Attemp at SVR##################
+
+dat <- data.frame(x = data.train.std.c, y = as.factor(data.train.std.c$donr))
+out <- svm(as.factor(data.train.std.c$donr) ~., data = dat, kernel = "radial", cost = 10)
+summary(out)
+table(out$fitted, as.factor(data.train.std.c$donr))
+
+# We find no training errors, as it was easy to find hyperplanes that fully separated the classes
+
+# Now we check the performance on the test observations
+dat.te <- data.frame(x = data.valid.std.c, y = as.factor(data.valid.std.c$donr))
+pred.te <- predict(out, newdata = dat.te)
+table(pred.te, data.valid.std.c$donr)  # only two test set errors with cost = 10
+
+
+#damt SVR - My understanding is that it can be used on both types
+
+dat <- data.frame(x = data.train.std.y, y = as.factor(data.train.std.y$damt))
+out <- svm(y ~., data = dat, kernel = "radial", cost = 10)
+summary(out)
+table(out$fitted, dat$y)
+
+# We find no training errors, as it was easy to find hyperplanes that fully separated the classes
+
+# Now we check the performance on the test observations
+dat.te <- data.frame(x = data.valid.std.y, y = as.factor(data.valid.std.y$damt))
+pred.te <- predict(out, newdata = dat.te)
+table(pred.te, dat.te$y)  # only two test set errors with cost = 10
+
+#profit for this model is 11153.5 Not very effective
